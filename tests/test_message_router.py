@@ -82,3 +82,22 @@ class TestParseEvent:
 def test_url_from_card_handles_qqdocurl() -> None:
     text = '{"meta":{"x":{"qqdocurl":"https://b23.tv/abc"}}}'
     assert url_from_card(text) == "https://b23.tv/abc"
+
+
+def test_json_component_card_url_without_plain_text() -> None:
+    card_url = "https://b23.tv/card123"
+    event = _StubEvent(
+        message_obj=_StubMessageObj(
+            message=[
+                _StubComponent(
+                    type="json",
+                    data={"meta": {"detail_1": {"qqdocurl": card_url}}},
+                ),
+            ],
+        ),
+    )
+
+    ctx = parse_event(event)
+
+    assert ctx.plain_text == ""
+    assert url_from_card(ctx.json_card_text) == card_url
